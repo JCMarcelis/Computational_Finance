@@ -7,4 +7,5 @@ In order for the code to run smoothly, pull this repository and run `pip install
 
 ## Financial data science, option pricing, and hedging
 The main python notebook contains all the plots created by the code from the src folder.
+* [volatility.py](src/volatility.py): contains all the code for the volatility part.
 * [hedging_sim.py](src/hedging_sim.py): contains all the code for the hedging simulation.
