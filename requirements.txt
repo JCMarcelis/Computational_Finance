@@ -6,3 +6,7 @@ yfinance
 seaborn
 statsmodels
 skfolio
+pandas
+openmeteo_requests
+retry_requests
+requests_cache

@@ -14,3 +14,4 @@ The main python notebook contains all the plots created by the code from the src
 The main notebook contains all plots and data created by the code in the src folder.
 * [Euler_vs_Milstein.py](src/Euler_vs_Milstein.py): contains all the code for comparing Euler and Milstein discretization for the Heston model
 * [control_variate_MC.py](src/control_variate_MC.py): contains all the code for the plain and control variate Monte Carlo simluations
+* [weather_derivatives.py](src/weather_derivatives.py): contains the code for creating options prices for weather derivatives
