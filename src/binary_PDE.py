@@ -3,15 +3,40 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.sparse import diags
 from scipy.sparse.linalg import splu
-from scipy.interpolate import interp1d
 from scipy.stats import norm
 
 def closed_form_price(T, r, sigma, K, S0):
+    """Calculates the binary option price using the analytical expression
+
+    Args:
+        T (float): remaining time of the option
+        r (float): risk-free interest rate
+        sigma (float): constant volatility
+        K (float): strike price
+        S0 (float): initial underlying asset price
+
+    Returns:
+        float: analytical binary option price
+    """    
     d_minus = (np.log(S0/K) + (r - 0.5*sigma**2)*T) / (sigma*np.sqrt(T))
     return np.exp(-r * T) * norm.cdf(d_minus)
 
 
 def MC_binary_price(num_paths, T, r, sigma, K, S0, seed):
+    """Calculates a Monte Carlo estimate of the binary option price
+
+    Args:
+        num_paths (int): number of Monte Carlo sample paths
+        T (float): remaining time of the option
+        r (float): risk-free interest rate
+        sigma (float): constant volatility
+        K (float): strike price
+        S0 (float): initial underlying asset price
+        seed (int): seed for reproducibility
+
+    Returns:
+        floats: Monte Carlo estimate and the p=95% confidence intervals
+    """    
     rng = np.random.default_rng(seed)
     Z = rng.standard_normal(num_paths)
 
@@ -26,6 +51,21 @@ def MC_binary_price(num_paths, T, r, sigma, K, S0, seed):
 
 
 def BTCS_scheme(K, x, tau, q, a, b):
+    """Calculates the binary option price from black-scholes equation in the heat equation form 
+       using the backward-time central-space discretization scheme. The variable transformations 
+       are listed in the accompanying report.
+
+    Args:
+        K (float): strike price
+        x (array): values for the stock price in transformed variables
+        tau (array): time steps in transformed variables
+        q (float): coefficient resulting from transformations
+        a (float): coefficient resulting from transformations
+        b (float): coefficient resulting from transformations
+
+    Returns:
+        array: array of transformed option prices at different times and underlying prices
+    """    
     Nx  = len(x)-1
     Nt  = len(tau)-1
     dx  = x[1] - x[0]
@@ -64,7 +104,21 @@ def BTCS_scheme(K, x, tau, q, a, b):
 
 
 def CN_scheme(K, x, tau, q, a, b):
+    """Calculates the binary option price from black-scholes equation in the heat equation form 
+       using the Crank-Nicolson discretization scheme. The variable transformations 
+       are listed in the accompanying report.
 
+    Args:
+        K (float): strike price
+        x (array): values for the stock price in transformed variables
+        tau (array): time steps in transformed variables
+        q (float): coefficient resulting from transformations
+        a (float): coefficient resulting from transformations
+        b (float): coefficient resulting from transformations
+
+    Returns:
+        array: array of transformed option prices at different times and underlying prices
+    """    
     Nx  = len(x)-1
     Nt  = len(tau)-1
     dx  = x[1] - x[0]
@@ -113,13 +167,24 @@ def CN_scheme(K, x, tau, q, a, b):
 
 
 def plot_option_surface(y, tau, x, T, K, sigma, a, b):
+    """Plots the option surface by transforming x, tau, and y to S, t, and C
 
+    Args:
+        y (array): option prices in transformed variables
+        x (array): values for the stock price in transformed variables
+        tau (array): time steps in transformed variables
+        T (float): total time of the option
+        K (float): strike price
+        sigma (float): constant volatility
+        a (float): coefficient resulting from transformations
+        b (float): coefficient resulting from transformations
+    """    
     TAU, X = np.meshgrid(tau, x, indexing='ij')
     S = K * np.exp(X)
     t = T - 2*TAU/sigma**2
     C = K * y  * np.exp(-a*X - b*TAU)
 
-    fig = plt.figure(figsize=(10, 7))
+    fig = plt.figure(figsize=(10, 7), dpi=300)
     ax = fig.add_subplot(111, projection='3d')
     surf = ax.plot_surface(t, S, C, cmap='viridis', edgecolor='none')
     ax.set_xlabel(r'$t$', fontsize=16)
@@ -136,7 +201,21 @@ def plot_option_surface(y, tau, x, T, K, sigma, a, b):
 
 
 def sens_analysis(x, tau, Nx, r, sigma, K_sing, parameter_list, parameter_to_vary='sigma'):
+    """Sensitivity anaylsis for the parameters K and sigma.
 
+    Args:
+        x (array): values for the stock price in transformed variables
+        tau (array): time steps in transformed variables
+        Nx (int): number of steps in x
+        r (float): risk-free interest rate
+        sigma (float): constant volatility
+        K_sing (float): original strike price
+        parameter_list (array): different values for the parameter of choice
+        parameter_to_vary (str, optional): parameter that changes. Defaults to 'sigma'.
+
+    Returns:
+        arrays: values for option surface and S, and values for K or sigma
+    """    
     C_surface = np.zeros((len(parameter_list), Nx))
 
     if parameter_to_vary == 'sigma':
@@ -178,5 +257,17 @@ def sens_analysis(x, tau, Nx, r, sigma, K_sing, parameter_list, parameter_to_var
 
 
 def digital_delta_analytic(r, sigma, S, K, tau):
+    """Calculates the binary option delta using the analytical expression
+
+    Args:
+        r (float): risk-free interest rate
+        sigma (float): constant volatility
+        S (float): underlying asset price
+        K (float): strike price
+        tau (float): time until maturity
+
+    Returns:
+        float: binary option delta
+    """    
     d_minus = (np.log(S/K) + (r - 0.5*sigma**2)*tau) / (sigma * np.sqrt(tau))
     return np.exp(-r*tau) * norm.pdf(d_minus) / (sigma * np.sqrt(tau) * S)
