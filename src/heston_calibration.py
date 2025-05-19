@@ -7,6 +7,7 @@ import os
 from scipy.integrate import quad
 
 def load_market_data(date):
+    """Load market volatility surface data for given date."""
     raw = np.load("data/raw_ivol_surfaces.npy", allow_pickle=True).item()
     interp = np.load("data/interp_ivol_surfaces.npy", allow_pickle=True).item()
 
@@ -16,6 +17,7 @@ def load_market_data(date):
             'vols': raw[date]['vols']}
 
 def heston_cf(phi_complex, T, S0, r, kappa, theta, sigma, rho, v0):
+    """Calculate Heston characteristic function value."""
     if T < 1e-9:
         return np.exp(1j * phi_complex * np.log(S0 if S0 > 0 else 1e-100)) # Avoid log(0)
 
@@ -69,6 +71,7 @@ def heston_cf(phi_complex, T, S0, r, kappa, theta, sigma, rho, v0):
     return np.exp(final_exponent)
 
 def Pj(j_index, K_strike, T_maturity, S0, r, kappa, theta, sigma, rho, v0):
+    """Compute Heston probability function P1 or P2."""
     i_complex = 1j
     def integrand(u_integrand):
         phi_arg = u_integrand - i_complex if j_index == 1 else u_integrand
@@ -90,6 +93,7 @@ def Pj(j_index, K_strike, T_maturity, S0, r, kappa, theta, sigma, rho, v0):
     return np.nan if np.isnan(integral_value) else (0.5 + (1 / np.pi) * integral_value)
 
 def heston_call_price(S0, K_strike, r, T_maturity, kappa, theta, sigma, rho, v0):
+    """Calculate European call option price using Heston model."""
     P1 = Pj(1, K_strike, T_maturity, S0, r, kappa, theta, sigma, rho, v0)
     P2 = Pj(2, K_strike, T_maturity, S0, r, kappa, theta, sigma, rho, v0)
 
@@ -99,6 +103,7 @@ def heston_call_price(S0, K_strike, r, T_maturity, kappa, theta, sigma, rho, v0)
     return max(0, price) if not np.isnan(price) else np.nan
 
 def calculate_implied_volatility(price, S, K, r, T):
+    """Convert option price to implied volatility using Black-Scholes."""
     if price < (max(0.0, S - K * np.exp(-r*T)) - 1e-7) or price > (S + 1e-7) : # allow for small numerical error from max(0,price)
          return np.nan
     try:
@@ -108,8 +113,8 @@ def calculate_implied_volatility(price, S, K, r, T):
     except (ValueError, RuntimeError): # Brentq might fail if objective doesn't change sign or other issues
         return np.nan
 
-def calibrate_heston(market_data, S0_market, r_market, 
-                                initial_guess_params=[2.0, 0.05, 0.20, -0.7, 0.04]):
+def calibrate_heston(market_data, S0_market, r_market, initial_guess_params=[2.0, 0.05, 0.20, -0.7, 0.04]):
+    """Calibrate Heston model parameters to market data."""
     eps_b = 1e-5 
     param_bounds = Bounds(
         [eps_b, eps_b, eps_b, -1 + eps_b, eps_b], 
@@ -209,6 +214,7 @@ def plot_volatility_surface(strikes_input, tenors_input, vols_surface, title_str
     return ax_plot
 
 def analyze_and_plot(market_data, S0_market, r_market, calibrated_params_array, date_str):
+    """Create comparison plots of market and model volatility surfaces."""
     plt.rcParams.update({'font.size': 14})  # Increase default font size
     fig = plt.figure(figsize=(17, 7))
     ax1 = fig.add_subplot(1, 2, 1, projection='3d')
