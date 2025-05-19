@@ -4,6 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.sparse import diags
 from scipy.sparse.linalg import splu
 from scipy.stats import norm
+from scipy.interpolate import interp1d
 
 def closed_form_price(T, r, sigma, K, S0):
     """Calculates the binary option price using the analytical expression

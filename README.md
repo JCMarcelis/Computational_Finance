@@ -19,3 +19,5 @@ The main notebook contains all plots and data created by the code in the src fol
 ## Assignment 3 (root directory): Binary options, Barrier options, and implied volatility on the Heston model
 The main notebook contains all plots and data created by the code in the src folder.
 * [binary_PDE.py](src/binary_PDE.py): contains all the code for binary option pricing using the analytical expression, Monte Carlo estimates, the BTCS scheme, and the CN scheme.
+* [barrier.py](src/barrier.py): contains code for barrier option pricing
+* [heston_calibration.py](src/heston_calibration.py): code for the Heston model calibration to the S&P500 data
